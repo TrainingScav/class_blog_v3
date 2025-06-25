@@ -17,14 +17,79 @@ public class BoardController {
 
     private final BoardRepository boardRepository;
 
-    // 게시글 삭제 액션 처리
-    // /board/{id}/delete method="post"
 
-    // 1. 로그인 여부
-    // 2. 로그인 x (로그인 페이지로 리다이렉트 처리)
-    // 3. 로그인 o (게시물 존재 여부 다시 확인) - 이미 삭제된 게시물 입니다.
-    // 4. 권한 체크 (1 유저의 게시물인데 3번 유저가 삭제할 수 있음)
-    // 5. 리스트 화면으로 리다이렉트 처리
+
+    // 게시글 수정하기 화면 요청
+
+    // 1. 인증 검사
+    // 2. 수정할 게시글 존재 여부 확인
+    // 3. 권한 체크
+    // 4. 수정 폼에 기존 데이터 뷰 바인딩 처리
+    @GetMapping("/board/{id}/update-form")
+    public String updateForm(@PathVariable(name = "id") Long boardId, HttpServletRequest request, HttpSession session) {
+
+        // 1.
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login-form";
+        }
+
+        // 2.
+        Board board = boardRepository.findById(boardId);
+        if (board == null) {
+            throw new RuntimeException("수정할 게시글이 존재하지 않습니다.");
+        }
+
+        // 3.
+        if( !board.isOwner(sessionUser.getId())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        // 4.
+        request.setAttribute("board", board);
+
+        // 내부에서(스프링 컨테이너) 뷰 리졸브를 활용해서 머스태치 파일 요청
+        return "board/update-form";
+    }
+
+
+    // 1. 인증 검사
+    // 2. 유효성 검사
+    // 3. 권한 체크를 위해 게시글 다시 조회
+    // 4. 더티 체킹을 통한 수정 설정
+    // 5. 수정 완료 후에 게시글 상세보기로 리다이렉트 처리
+
+    @PostMapping("/board/{id}/update-form")
+    public String update(@PathVariable(name = "id") Long boardId, BoardRequest.UpdateDTO reqDTO, HttpSession session) {
+
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login-form";
+        }
+
+        // 2. 사용자 입력값 유효성 검사
+        reqDTO.validate();
+
+        // 3. 권한 체크를 위한 조회
+        Board board = boardRepository.findById(boardId);
+        // board - 1차 캐시에 들어가 있음
+
+        if (!board.isOwner(sessionUser.getId())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        // 4. 엔티티 접근해서 상태 변경
+        Board updateBoard = boardRepository.updateById(boardId, reqDTO);
+
+        return "redirect:/board/" + boardId;
+    }
+
+    /**
+     * 게시글 삭제 액션 처리
+     * @param id
+     * @param session
+     * @return 리스트 화면으로 이동
+     */
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable(name = "id") Long id, HttpSession session) {
 
