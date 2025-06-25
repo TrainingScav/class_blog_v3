@@ -1,5 +1,7 @@
 package com.tenco.blog.board;
 
+import com.tenco.blog.user.User;
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -7,45 +9,28 @@ import lombok.Data;
  * Object로 변화해서 전달하는 DTO 역할을 담당한다.
  */
 
+@Builder
 public class BoardRequest {
 
-    // 정적 내부 클래스로 기능별로 DTO 관리
-    // 게시글 저장 요청 데이터
-    // BoardRequest.SaveDTO.변수명
-//    @Data
-//    public static class SaveDTO {
-//        private String title;
-//        private String content;
-//        private String username;
-//
-//        // DTO에서 Entity로 변환하는 메서드를 만들기
-//        // 계층 간 데이터 변환을 명확하게 분리 하기 위함
-//        public Board toEntity() {
-//            return new Board(title,content,username);
-//        }
-//
-//    } // end of SaveDTO
-//
-//    // 게시글 수정용 DTO 추가
-//    @Data
-//    public static class UpdateDTO {
-//        private String title;
-//        private String content;
-//        private String username;
-//
-//        // 검증 메서드 (유효성 검사 기능을 추가)
-//        public void validate() throws IllegalAccessException {
-//            if (username == null || username.trim().isEmpty()) {
-//                throw new IllegalAccessException("작성자 명은 필수 입니다.");
-//            }
-//            if (title == null || title.trim().isEmpty()) {
-//                throw new IllegalAccessException("제목은 필수 입니다.");
-//            }
-//            if (content == null || content.trim().isEmpty()) {
-//                throw new IllegalAccessException("내용은 필수 입니다.");
-//            }
-//        }
-//
-//    }
+    // 게시글 저장 DTO
+    @Data
+    public static class SaveDTO {
+        private String title;
+        private String content;
+        // username 제거 : 세션에서 가져올 예정
 
+        // (User) <-- toEntity() 호출할 때 세션에서 가져와서 넣어 주면 됨
+        public Board toEntity(User user) {
+            return Board.builder().title(this.title).user(user).content(this.content).build();
+        }
+
+        public void validate() {
+            if (title == null || title.trim().isEmpty()) {
+                throw new IllegalArgumentException("제목은 필수 입니다.");
+            }
+            if (content == null || content.trim().isEmpty()) {
+                throw new IllegalArgumentException("내용은 필수 입니다.");
+            }
+        }
+    }
 }

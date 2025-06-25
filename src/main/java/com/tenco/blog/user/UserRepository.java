@@ -16,6 +16,28 @@ public class UserRepository {
     private final EntityManager em;
 
     /**
+     * 로그인 요청 기능 (사용자 정보 조회)
+     * @param username
+     * @param password
+     * @return 성공 시 User 엔티티 실패 시 null 반환
+     */
+    public User findByUsernameAndPassword(String username, String password) {
+
+        try {
+            String jpql = " select u from User u where u.username = :username and u.password = :password ";
+            TypedQuery typedQuery = em.createQuery(jpql,User.class);
+
+            typedQuery.setParameter("username", username);
+            typedQuery.setParameter("password", password);
+            return (User)typedQuery.getSingleResult();
+        } catch (Exception e) {
+            // 일치하는 사용자가 없거나 에러 발생 시 null 반환
+            // 즉, 로그인 실패를 의미함.
+            return null;
+        }
+    }
+
+    /**
      * 회원정보 저장
      * @param user (비영속 상태)
      * @return User 엔티티 반환

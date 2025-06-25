@@ -3,14 +3,18 @@ package com.tenco.blog.board;
 import com.tenco.blog.user.User;
 import com.tenco.blog.utils.MyDateUtil;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 
+@Builder
 // 기본 생성자 - JPA에서 엔티티는 기본 생성자가 필요
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 @Table(name = "board_tb")
 @Entity
@@ -38,15 +42,10 @@ public class Board {
     @CreationTimestamp
     private Timestamp createdAt; // created_at(스네이크 케이스로 자동변환)
 
-
-
-    // 생성자 만들어 주기
-//    public Board(String title, String content, String username) {
-//        this.title = title;
-//        this.content = content;
-//        //this.username = username;
-//        // id와 createdAt은 JPA/Hibernate 가 자동으로 설정
-//    }
+    // 게시글의 소유자를 직접 확인하는 기능을 만들자
+    public boolean isOwner(Long checkUserId) {
+        return this.user.getId().equals(checkUserId);
+    }
 
     // 머스태치에서 표현할 시간을 포맷기능을(행위) 스르로 만들자
     public String getTime() {

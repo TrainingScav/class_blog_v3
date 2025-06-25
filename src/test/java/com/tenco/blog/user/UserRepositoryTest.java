@@ -14,6 +14,20 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
+    public void findByUsernameAndPassword_로그인_성공_테스트() {
+        // given
+        String username = "ssar";
+        String password = "1234";
+
+        // when
+        User user = userRepository.findByUsernameAndPassword(username,password);
+
+        // then
+        Assertions.assertThat(user).isNotNull();
+        Assertions.assertThat(user.getUsername()).isEqualTo("ssar");
+    }
+
+    @Test
     public void save_회원가입_테스트() {
         // given : 회원가입 시 사용할 사용자 정보
         User user = User.builder().username("testUser").email("a@naver.com").password("asd1234").build();
